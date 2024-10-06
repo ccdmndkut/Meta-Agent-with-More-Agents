@@ -1,7 +1,12 @@
 const express = require('express');
+const path = require('path');
+const { exec } = require('child_process');
+
 const app = express();
 const port = 3000;
 
+// Serve static files from the 'public' directory
+app.use(express.static(path.join(__dirname, '../public')));
 app.get('/', (req, res) => {
   res.send('Hello, Meta Agent with More Agents!');
 });
@@ -10,7 +15,6 @@ app.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);
 });
 
-const { exec } = require('child_process');
 
 app.get('/run-python', (req, res) => {
   exec('python ../app.py', (error, stdout, stderr) => {

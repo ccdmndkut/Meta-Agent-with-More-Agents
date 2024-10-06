@@ -239,3 +239,24 @@ class AlternativeWeatherFetcher(BaseModel):
     city: str = Field(..., description='The city to fetch weather data for.', example=['Macon'])
     state: str = Field(..., description='The state to fetch weather data for.', example=['GA'])
 
+class RandomNumberGenerator(BaseModel):
+    min_value:int=Field(...,description="The minimum value for the random numbers.",example=[1])
+    max_value:int=Field(...,description="The maximum value for the random numbers.",example=[49])
+    count:int=Field(...,description="The number of unique random numbers to generate.",example=[6])
+
+@tool("Random Number Generator Tool",args_schema=RandomNumberGenerator)
+def random_number_generator_tool(min_value:int,max_value:int,count:int)->str:
+    """
+    Generates a specified number of unique random numbers within a given range.
+    """
+    import random
+    try:
+        if min_value >= max_value:
+            return "Error: min_value should be less than max_value"
+        if count > max_value - min_value + 1:
+            return "Error: count should not be more than the range of numbers"
+        random_numbers=random.sample(range(min_value,max_value+1),count)
+        return ','.join(map(str,random_numbers))
+    except Exception as err:
+        return f"Error: {err}"
+

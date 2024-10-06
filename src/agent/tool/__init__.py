@@ -30,23 +30,29 @@ class ToolAgent(BaseAgent):
                 f.write(content)
             print(f'{self.location} has been created successfully.')
 
-    def generate_tool(self,state:AgentState):
-        system_prompt=read_markdown_file('./src/agent/tool/prompt/generate.md')
-        user_prompt='**Query:**\n`{query}`'
-        system_message=SystemMessage(system_prompt)
-        human_message=HumanMessage(user_prompt.format(query=state.get('input')))
-        tool_data=self.llm.invoke([system_message,human_message],json=True)
+    def generate_tool(self, state: AgentState):
+        existing_tool = self.find_the_tool(state.get('input'))
+        if existing_tool:
+            print(f"Tool {existing_tool['name']} already exists.")
+            return {**state, 'tool_data': existing_tool, 'error': ''}
+        
+        system_prompt = read_markdown_file('./src/agent/tool/prompt/generate.md')
+        user_prompt = '**Query:**\\n`{query}`'
+        system_message = SystemMessage(system_prompt)
+        human_message = HumanMessage(user_prompt.format(query=state.get('input')))
+        tool_data = self.llm.invoke([system_message, human_message], json=True)
+        
         try:
             ast.parse(tool_data.content.get('tool'))
-            error=''
-            save_tool_to_module(self.location,tool_data.content)
+            error = ''
+            save_tool_to_module(self.location, tool_data.content)
             if self.verbose:
                 print(f'{tool_data.content.get("name")} has been saved to {self.location} successfully.')
         except Exception as e:
-            error=e
+            error = e
             print(f'Error: {error}')
-        return {**state,'tool_data':tool_data.content,'error':error}
-
+        
+        return {**state, 'tool_data': tool_data.content, 'error': error}
     def update_tool(self,state:AgentState):
         tool=self.find_the_tool(state.get('input'))
         system_prompt=read_markdown_file('./src/agent/tool/prompt/update.md')

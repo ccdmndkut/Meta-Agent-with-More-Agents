@@ -1,5 +1,13 @@
 import ast
 from textwrap import dedent
+from dotenv import set_key, load_dotenv
+import os
+
+def save_api_key(key_name, api_key):
+    """Save API key to .env file securely."""
+    dotenv_path = os.path.join(os.path.dirname(__file__), '.env')
+    set_key(dotenv_path, key_name, api_key)
+
 
 def extract_tools_from_module(location:str):
     with open(location,'r') as f:
